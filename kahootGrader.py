@@ -5,6 +5,8 @@ import os
 import collections
 from nltk.metrics import edit_distance as ed
 from openpyxl import load_workbook
+import csv
+
 
 
 
@@ -142,6 +144,7 @@ print('Pick directory for Kahoot csvs')
 toAdd=getDir()
 files=os.listdir(toAdd)
 gradebook=pd.read_csv(grades)
+print(gradebook.to_dict())
 grade_dic = collections.defaultdict(lambda:collections.defaultdict(lambda:0))
 
 
@@ -185,54 +188,69 @@ def get_student(students, id):
 
 
 def get_student2(kahooters, students):
-    temp = 1000
-    name = ''
-    correct=0
-    incorrect=0
-    total=0
-    dic={}
+    correct = 0
+    incorrect = 0
+    total = 0
+    dic = {}
+    not_found = set()
     for s1 in students:
         s1 = s1.lower()
-
+        temp = 1000
+        name = 'abc '
+        target= ''
         for num in kahooters:
 
             s = str(num)
             used_kahoot = s
-            s=s.lower()
+
+            s = s.lower()
             if (s.__contains__('@')):
                 s = s[0:s.index('@')]
             if (s.__contains__(' ')):
                 s = s[0:1] + s[s.index(' ') + 1:len(s)]
+
             if (s != None and not s == 'nan' and students != None):
+
                 try:
-                    temp = ed(s, s1)
-                    if (temp == 0 ):
-                        name =s
-                        dic[s1]=[name,used_kahoot,temp]
-                        correct+=1
-
-                        break
 
 
-                    elif temp > ed(s, s1):
+
+
+                    if temp > ed(s, s1):
                         temp = ed(s, s1)
                         name = s1
+                        target=used_kahoot
+
+                        if (temp == 0 or temp ==1):
+                            name = s1
+                            dic[s1] = [name, used_kahoot, temp]
+                            correct += 1
+
+                            break
+
                 except TypeError:
                     print()
-        if (temp / len(name) <= 0.35):
-            #print( name,used_id, temp / len(name))
-            dic[s1]= [name,used_kahoot,temp]
-            if name==s1:
-                correct+=1
-            else:
-                print(s1,name)
-                incorrect+=1
-        else:
 
-            dic[s1]= [None,used_kahoot,temp]
-            total+=1
-    print('Accuracy is '+str(float(correct/(total+correct+incorrect))*100)+'%')
-    print(dic)
+
+        if ( temp / len(name) <= 0.4 and temp < len(name)):
+            # print( name,used_id, temp / len(name))
+            dic[s1] = [name, target, temp]
+
+            if used_kahoot in kahooters:
+                kahooters.remove(used_kahoot)
+
+            if name == s1:
+                correct += 1
+            else:
+                print('Incorrect: ',s1, target, temp)
+                incorrect += 1
+        else:
+            not_found.add(used_kahoot)
+
+
+            # total+=1
+    print('Accuracy is ' + str(float(correct / (correct+total+incorrect)) * 100) + '%')
+    print(not_found)
     return dic
 
 def readFiles():
@@ -244,7 +262,7 @@ def readFiles():
     list_students = []
     for num in range(1, len(gradebook['SIS Login ID'])):
         list_students.append(str(gradebook['SIS Login ID'][num]))
-    print(list_students)
+
 
     for file in files:
 
@@ -279,16 +297,18 @@ def readFiles():
                 grade_dic[student][assignment_name]=new_grades['Correct Answers'][new_grades.index[new_grades['Players']==id][0]]
         """
         for student in list_students:
-            if id_kahoot_dic[student][0]!=None:
-                kahoot_id=id_kahoot_dic[student][1]
-                grade_dic[student][assignment_name] = new_grades['Correct Answers'][
-                    new_grades.index[new_grades['Players'] == kahoot_id][0]]
+            if (student in id_kahoot_dic.keys()):
+                if id_kahoot_dic[student][0]!=None:
+                    kahoot_id=id_kahoot_dic[student][1]
+                    grade_dic[assignment_name][student] = new_grades['Correct Answers'][
+                        new_grades.index[new_grades['Players'] == kahoot_id][0]]
             else:
-                grade_dic[student][assignment_name] = 0
+                grade_dic[assignment_name][student] = 0
                 absent_list.append(student)
+        update_gradebook(grade_dic[assignment_name],assignment_name)
 
 
-    print(absent_list)
+    print('absents: ',absent_list)
     return list_files,grade_dic
 
 
@@ -303,14 +323,15 @@ def write_summary(list_files):
     stuff.write('total,')
     stuff.write('%,')
 
-    for student in grade_dic.keys():
+    for assignment in grade_dic.keys():
         total = 0
-        stuff.write('\n')
-        stuff.write(str(student) + ',')
 
-        for assignment in grade_dic[student].keys():
-            stuff.write(str(grade_dic[student][assignment]) + ',')
-            total += grade_dic[student][assignment]
+
+        for student in grade_dic[assignment].keys():
+            stuff.write('\n')
+            stuff.write(str(student) + ',')
+            stuff.write(str(grade_dic[assignment][student]) + ',')
+            total += grade_dic[assignment][student]
         stuff.write(str(total) + ',')
         stuff.write(str(float(total / total_points) * 100) + '%' + ',')
 
@@ -332,28 +353,53 @@ def get_attendance_list(grades,list_files):
 
 def get_totals(grade_dic):
     totals=collections.defaultdict(lambda:0)
-    for student in grade_dic.keys():
+    for assignment in grade_dic.keys():
         total=0
-        for assignment in grade_dic[student].keys():
-            total += grade_dic[student][assignment]
+        for student in grade_dic[assignment].keys():
+            total += grade_dic[assignment][student]
         totals[student]=total
     return totals
-#todo
-def update_gradebook(grade_dic):
-    total_grades=pd.DataFrame.from_dict(get_totals(grade_dic))
-    reader=pd.read_csv(grades)
-    book=load_workbook(grades)
-    writer=pd.ExcelWriter(grades,engine='openpyxl')
-    writer.book = book
-    writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
-    writer.write_cells()
+def update_gradebook(grade_dic,assignment):
+    #total_grades=pd.DataFrame.from_dict(get_totals(grade_dic))
+    panda=pd.read_csv(grades)
+    reader=panda.to_dict()
+    key=input('Enter Kahoot ID for ' + assignment + ' ')
+    for student in grade_dic.keys():
+        if student != 'nan' and student!= None and student!= '':
+
+            reader[key][panda.index[gradebook['SIS Login ID'] == student][0]]=grade_dic[student]
+    new_file=open(grades,'w')
+    writer=csv.DictWriter(new_file,reader.keys())
+    writer.writeheader()
+    print(reader[key])
+
+    for index in range(0, len(reader['Student'].keys())):
+        row = []
+        for key in reader:
+
+            if (key!=0 and isint(key) == False and isfloat(key)== False and reader[key][index]!='nan' and reader[key][index]!=None and reader[key][index]!=''):
+                new_file.write(str(reader[key][index])+',')
+            else:
+                new_file.write('\t,')
+        new_file.write('\n')
+    new_file.close()
+
+
+#Kahoot 1.1 (302069)
+#Kahoot 1.2 (302070)
+#Kahoot 2.1 (302071)
+#Kahoot-2.2 (302072)
+#Kahoot-3.0 (302073)
+#Kahoot-3.1 (302074)
+#Kahoot -3.5 (302075)
+#Kahoot 3.2 (350341)
 
 
 
 list_files,grade_dic=readFiles()
 
 write_summary(list_files)
-# attendance=get_attendance_list(grade_dic,list_files)
+
 a_data=read_attendance()
-#update_attendance(a_data,absent_list)
+update_attendance(a_data,absent_list)
 
