@@ -19,14 +19,14 @@ API_KEY = str(file.read())
 file.close()
 # Initialize a new Canvas object
 canvas = Canvas(API_URL, API_KEY)
-course_id=75207#int(input('enter course id: '))
-quiz_id= 83761#int(input('enter quiz id: '))
+course_id=int(input('enter course id: '))
+quiz_id= int(input('enter quiz id: '))
 course=canvas.get_course(course_id)
 
 
 print('Extracting from: '+course.name)
 quiz=course.get_quiz(quiz_id)
-quiz_name=float(re.findall(r'\"points_possible\": [0-9.]+',quiz.to_json())[0].split(':')[1].strip())
+act_name=float(re.findall(r'\"title\": \"[A-Z :.a-z0-9]+\"',quiz.to_json())[0].split(':')[1].strip())
 
 
 
@@ -55,7 +55,7 @@ for submission in quiz_submissions:
 
 print('results: '+str(output))
 df=pd.DataFrame.from_dict(output,orient='index')
-df.to_csv('results/results.csv')
+df.to_csv('results/'+act_name+'results.csv')
 print('Processing Groups...')
 group_results={}
 print(group_dict)
@@ -81,7 +81,7 @@ for group in group_dict.keys():
 
 print('results: '+str(group_results))
 df=pd.DataFrame.from_dict(group_results,orient='index')
-df.to_csv('results/results_group_analysis.csv')
+df.to_csv('results/'+act_name+'results_group_analysis.csv')
 
 
 
