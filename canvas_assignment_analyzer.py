@@ -61,7 +61,6 @@ for submission in assignment_submissions:
     group_dict[group_name].append(student_name)
     if group_name != None:
         output[student_name]={'group':group_name,'score':score}
-print(assignment_json)
 act_name=str(re.findall(r'\"name\": \"[A-Z :.a-z0-9(),\-&]+\"',assignment_json)[0].split(':')[1].strip())
 act_name=act_name.replace(' ','')
 act_name=act_name.replace('\"','')
