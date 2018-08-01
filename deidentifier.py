@@ -25,9 +25,9 @@ csv_file=filex.read()
 filex.close()
 
 
-for row in range(0,len(key_file['id'])):
-    print(key_file['id'][row]+' '+str(int(key_file['d-id'][row])))
-    csv_file=csv_file.replace(str(key_file['id'][row]),str(int(key_file['d-id'][row])))
+for row in range(0,len(key_file['d-id'])):
+    print(key_file['d-id'][row]+' '+str(int(key_file['id'][row])))
+    csv_file=csv_file.replace(str(key_file['d-id'][row]),str(int(key_file['id'][row])))
 
 
 final_file=open(file,'w')

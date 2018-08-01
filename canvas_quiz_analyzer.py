@@ -9,8 +9,11 @@ import ast
 import re
 import collections
 import statistics
+import os
 
-
+p=os.path.abspath(os.curdir)
+if os.path.exists(p+'\\reports')==False:
+    os.makedirs(p+'\\reports')
 # Canvas API URL
 API_URL = "https://uncc.instructure.com/"
 # Canvas API key
@@ -28,7 +31,6 @@ course=canvas.get_course(course_id)
 print('Extracting from: '+course.name)
 quiz=course.get_quiz(quiz_id)
 quiz_json=quiz.to_json()
-
 
 
 
@@ -54,22 +56,24 @@ for submission in quiz_submissions:
         for member in group.get_users():
             if ast.literal_eval(member.to_json())['id']==user_id:
                 group_name=str(group)
-                group_name=re.findall(r' [A-Z] ',group_name)[0].strip()
+                group_name=re.findall(r'Group ID : [A-Z]+',group_name)[0].split(':')[1].strip()
+
     group_dict[group_name].append(student_name)
 
     if submission['time_spent']!=None:
         time_spent=float(submission['time_spent']/60.0)
     else:
         time_spent=None
-    output[student_name]={'time':time_spent,'group':group_name,'score':score}
+    if group_name!=None:
+        output[student_name]={'time':time_spent,'group':group_name,'score':score}
 
-act_name=str(re.findall(r'\"title\": \"[A-Z :.a-z0-9(),\-]+\"',quiz_json)[0].split(':')[1].strip())
+act_name=str(re.findall(r'\"title\": \"[A-Z :.a-z0-9(),\-&]+\"',quiz_json)[0].split(':')[1].strip())
 act_name=act_name.replace(' ','')
 act_name=act_name.replace('\"','')
 act_name=act_name.lower()
 print('results: '+str(output))
 df=pd.DataFrame.from_dict(output,orient='index')
-file_name=act_name+'_results.csv'
+file_name='reports\\'+act_name+'_results.csv'
 df.to_csv(file_name)
 print('Processing Groups...')
 group_results={}
@@ -97,7 +101,7 @@ for group in group_dict.keys():
 
 print('results: '+str(group_results))
 df=pd.DataFrame.from_dict(group_results,orient='index')
-file_name=act_name+'_results_group_analysis.csv'
+file_name='reports\\'+act_name+'_results_group_analysis.csv'
 df.to_csv(file_name)
 
 

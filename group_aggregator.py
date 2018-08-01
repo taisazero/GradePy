@@ -17,19 +17,23 @@ csv_data=pd.read_csv(csv)
 group_column= input('Enter the group column: ')
 
 menu=input('1. one column \n2. multiple columns: ')
-if menu ==1:
+if menu =='1':
     analysis=input('Enter the analysis column: ')
 
     temp_dic=collections.defaultdict(lambda :[])
-    for row in range(0,len(csv_data[group_column])) :
-        temp_dic[csv_data[group_column][row]].append(float(csv_data[analysis][row]))
+
     final_dic={}
+    for row in range(0, len(csv_data[group_column])):
+        if csv_data[group_column][row] == 'LOL':
+            total = float(csv_data[analysis][row])
+            break
+    for row in range(0,len(csv_data[group_column])) :
+        temp_dic[csv_data[group_column][row]].append(float(csv_data[analysis][row]/total)*100)
     for key in temp_dic.keys():
-        print(temp_dic[key])
-        if key!='A':
+        if len(temp_dic[key])>=2:
             final_dic[key]=[statistics.mean(temp_dic[key]),statistics.stdev(temp_dic[key])]
         else:
-            final_dic[key] = [27.5,0 ]
+            final_dic[key] = [temp_dic[key],0]
     df=pd.DataFrame(final_dic)
     df.to_csv('aggregated.csv')
 else:

@@ -363,6 +363,7 @@ def update_gradebook(grade_dic,assignment):
     #total_grades=pd.DataFrame.from_dict(get_totals(grade_dic))
     panda=pd.read_csv(grades)
     reader=panda.to_dict()
+    print(reader)
     key=input('Enter Kahoot ID for ' + assignment + ' ')
     for student in grade_dic.keys():
         if student != 'nan' and student!= None and student!= '':
