@@ -106,6 +106,10 @@ venv.bak/
 #My Keys
 token.txt
 Keys.txt
+client_secret.json
 
 #Pycharm shit
 /.idea/
+#data
+reports/
+kahoot_reports/
