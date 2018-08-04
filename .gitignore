@@ -105,3 +105,7 @@ venv.bak/
 
 #My Keys
 token.txt
+Keys.txt
+
+#Pycharm shit
+/.idea/
