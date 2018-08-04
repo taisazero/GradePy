@@ -10,16 +10,17 @@ from pandas import ExcelWriter
 from pandas import ExcelFile
 from nltk.metrics import edit_distance as ed
 from canvas_grouper import Grouper
-
+from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askdirectory
+from tkinter import Tk
 
 def browse_file():
-    from tkinter.filedialog import askopenfilename
-
     Tk().withdraw()
-    filename = askopenfilename()
+    filename = askopenfilename(title='Choose the student logins file')
     return filename
+
+
 def browse_dir():
-    from tkinter.filedialog import askdirectory
     Tk().withdraw()
     name=askdirectory()
     return name
@@ -27,7 +28,7 @@ def browse_dir():
 
 print('Select Directory: ')
 dir=browse_dir()
-semester=input('Input Semester')
+semester=input('Input Semester: ')
 
 p=os.path.abspath(os.curdir)
 if os.path.exists(p+'\\kahoot_reports')==False:
@@ -40,13 +41,16 @@ if os.path.exists(p+'\\kahoot_reports\\'+str(semester))==False:
 
 grouper=Grouper(int(input('Enter course ID: ')))
 
-user_groups=grouper.get_group_dic()
+group_dic=grouper.get_group_dic()
 
-#group_dic = sorted(user_groups.items(), key=lambda x: x[0])
+
+
+#group_dic = sorted(group_dic.items(), key=lambda x: x[0])
 
 
 
 for root, dirs, files in os.walk(dir):
     for file in files:
         df=pd.read_excel(file)
+
 

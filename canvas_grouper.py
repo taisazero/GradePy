@@ -42,8 +42,17 @@ class Grouper:
                for user in group.get_users():
                    group_dic[str(group.name)].append({'id':int(user.id),'name':str(user.name)})
 
+        print(
+            'Due to Canvas API BS restrictions we need to ask for the student logins file. Please Browse and select the student logins csv file.' +
+            ' It needs to have the following columns : Student, ID, Login')
 
-
+        logins_file = browse_file()
+        df = pd.read_csv(logins_file, index_col=1)
+        for group in group_dic.keys():
+            for student_index in range(0, len(group_dic[group])):
+                temp = group_dic[group][student_index]
+                student = {'id': temp['id'], 'name': temp['name'], 'login': df.loc[temp['id']]['Login']}
+                group_dic[group][student_index] = student
 
         return group_dic
 
