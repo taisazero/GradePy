@@ -138,7 +138,7 @@ print(
     'Due to the Canvas API\'s BS restrictions, we need to ask for the student logins file. Please Browse and select the student logins csv file.' +
     ' It needs to have the following columns : Student, ID, Login')
 logins_file = browse()
-df = pd.read_csv(logins_file, index_col=1)
+df = pd.read_csv(logins_file)
 
 user_dic={}
 for row in range(0,len(df['Login'].keys())):
@@ -159,19 +159,20 @@ file.close()
 # Initialize a new Canvas object
 canvas = Canvas(API_URL, API_KEY)
 
-course = canvas.get_course(input('Enter course ID: '))
+course = canvas.get_course(input('Enter Course ID: '))
 
 print('Grading the course : ' + course.name)
 
-survey_assignment=course.get_assignment(input('Enter assignment ID: '))
+survey_assignment=course.get_assignment('Enter Assignment ID: ')
 
 submissions=survey_assignment.get_submissions()
 total_points=float(survey_assignment.points_possible)
 for submission in submissions:
     if submission.user_id in id_list:
-        submission.edit(submission={'score':total_points})
+        submission.edit(submission={'posted_grade':total_points})
     else:
-        submission.edit(submission={'score':0.0})
+        submission.edit(submission={'posted_grade':0.0})
+    print(str(submission.user_id)+' graded')
 
 
 
