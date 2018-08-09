@@ -163,7 +163,7 @@ course = canvas.get_course(input('Enter Course ID: '))
 
 print('Grading the course : ' + course.name)
 
-survey_assignment=course.get_assignment('Enter Assignment ID: ')
+survey_assignment=course.get_assignment(input('Enter Assignment ID: '))
 
 submissions=survey_assignment.get_submissions()
 total_points=float(survey_assignment.points_possible)
@@ -172,7 +172,7 @@ for submission in submissions:
         submission.edit(submission={'posted_grade':total_points})
     else:
         submission.edit(submission={'posted_grade':0.0})
-    print(str(submission.user_id)+' graded')
+    print('student '+str(submission.user_id)+' graded')
 
 
 
