@@ -141,8 +141,8 @@ logins_file = browse()
 df = pd.read_csv(logins_file)
 
 user_dic={}
-for row in range(0,len(df['Login'].keys())):
-    user_dic[df['Login'][row]] = df['ID'][row]
+for row in range(0,len(df['Login ID'].keys())):
+    user_dic[df['Login ID'][row]] = df['ID'][row]
 
 id_list=[]
 for student in participant_list:

@@ -4,10 +4,10 @@ import pandas as pd
 from pandas import DataFrame, ExcelWriter
 
 
-writer = ExcelWriter(r"C:\Users\E-Neo.DESKTOP-M4A5E83\Desktop\.xlsx")
-file = pd.ExcelFile()
+writer = ExcelWriter(r"pair_ngrams_unfiltered.xlsx")
+#file = pd.ExcelFile(writer)
 
-for filename in glob.glob(r"C:\Users\E-Neo.DESKTOP-M4A5E83\Downloads\Lab Reflection Topics-20180815T123242Z-001\Lab Reflection Topics\NMF\*.csv"):
+for filename in glob.glob(r"C:\Users\Zero\Documents\cohesionScripts\Lab Reflection Topics\collective\*.csv"):
     df_csv = pd.read_csv(filename)
 
     (_, f_name) = os.path.split(filename)
@@ -15,4 +15,6 @@ for filename in glob.glob(r"C:\Users\E-Neo.DESKTOP-M4A5E83\Downloads\Lab Reflect
 
     df_csv.to_excel(writer, f_short_name, index=False)
     print(f_name+' done')
+
 writer.save()
+writer.close()
